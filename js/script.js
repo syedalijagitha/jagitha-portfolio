@@ -270,22 +270,107 @@ menuBtn.addEventListener("click",()=>{
     const filterBtns = document.querySelectorAll(".work-filters .filter-btn");
     const workRows = document.querySelectorAll(".work-row");
 
-    filterBtns.forEach((fb) => {
-        fb.addEventListener("click", () => {
-            filterBtns.forEach((b) => b.classList.remove("active"));
-            fb.classList.add("active");
-            const val = fb.dataset.filter;
+   const panelContent = {
+   creative: {
+    type: "links",
+    heading: "Creative Design — Work Samples",
+    items: [
+        { label: "NSquare Herbals — Live Website", url: "https://www.nsquareherbals.com/?srsltid=AfmBOoq72MogskdBEI8ZA-m2XSvgcnRbbfDmiux46q5u_z_kd_XXDj3j" },
+        { label: "NSquare Herbals — AI-Generated Product Creatives", url: "https://www.nsquareherbals.com/collections/shop" },
+    ],
+},
+    whatsapp: {
+        type: "images",
+        heading: "WhatsApp Automation — Flow Screenshots",
+        items: [
+            { src: "assets/panel/whatsapp-01.png", caption: "Lead nurture sequence" },
+            { src: "assets/panel/whatsapp-02.png", caption: "Automated follow-up flow" },
+            { src: "assets/panel/whatsapp-03.png", caption: "Booking confirmation flow" },
+        ],
+    },
+    crm: {
+        type: "images",
+        heading: "CRM Automation — Pipeline Screenshots",
+        items: [
+            { src: "assets/panel/crm-01.png", caption: "Lead pipeline overview" },
+            { src: "assets/panel/crm-02.png", caption: "Automated stage transitions" },
+            { src: "assets/panel/crm-03.png", caption: "Follow-up task automation" },
+        ],
+    },
+};
 
-            workRows.forEach((row) => {
-                const plats = row.dataset.platform.split(" ");
-                if (val === "all" || plats.indexOf(val) !== -1) {
-                    row.classList.remove("hidden");
-                } else {
-                    row.classList.add("hidden");
-                }
-            });
+const filterPanel = document.getElementById("filterPanel");
+const filterPanelInner = document.getElementById("filterPanelInner");
+
+function buildPanel(key) {
+    const data = panelContent[key];
+    if (!data) return "";
+
+    let html = `<div class="panel-heading">${data.heading}</div>`;
+
+    if (data.type === "links") {
+        html += `<div class="panel-links">`;
+        data.items.forEach((item) => {
+            html += `
+                <a class="panel-link" href="${item.url}" target="_blank" rel="noopener">
+                    ${item.label}
+                    <span class="arrow">↗</span>
+                </a>`;
+        });
+        html += `</div>`;
+    } else if (data.type === "images") {
+        html += `<div class="panel-images">`;
+        data.items.forEach((item) => {
+            html += `
+                <button class="panel-thumb" type="button" data-src="${item.src}">
+                    <img src="${item.src}" alt="${item.caption}">
+                    <span class="panel-thumb-caption">${item.caption}</span>
+                </button>`;
+        });
+        html += `</div>`;
+    }
+
+    return html;
+}
+
+function wirePanelThumbs() {
+    filterPanelInner.querySelectorAll(".panel-thumb").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const img = btn.querySelector("img");
+            lightboxImg.src = img.src;
+            lightboxImg.alt = img.alt;
+            lightbox.classList.add("open");
         });
     });
+}
+
+filterBtns.forEach((fb) => {
+    fb.addEventListener("click", () => {
+        filterBtns.forEach((b) => b.classList.remove("active"));
+        fb.classList.add("active");
+        const val = fb.dataset.filter;
+
+        if (panelContent[val]) {
+            // Special pill: show dropdown panel only, hide the work-log rows underneath
+            workRows.forEach((row) => row.classList.add("hidden"));
+            filterPanelInner.innerHTML = buildPanel(val);
+            filterPanel.classList.add("is-open");
+            wirePanelThumbs();
+            return;
+        }
+
+        // Normal platform filter: close panel, filter rows as before
+        filterPanel.classList.remove("is-open");
+        workRows.forEach((row) => {
+            const plats = row.dataset.platform.split(" ");
+            if (val === "all" || plats.indexOf(val) !== -1) {
+                row.classList.remove("hidden");
+            } else {
+                row.classList.add("hidden");
+            }
+        });
+    });
+});
 
     // Lightbox
     const lightbox = document.getElementById("workLightbox");
